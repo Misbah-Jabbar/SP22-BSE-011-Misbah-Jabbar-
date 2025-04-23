@@ -1,0 +1,23 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.table {
+    margin-top: 20px;
+}
+
+#message {
+    min-height: 50px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .text-end {
+        text-align: left !important;
+        margin-top: 10px;
+    }
+}
