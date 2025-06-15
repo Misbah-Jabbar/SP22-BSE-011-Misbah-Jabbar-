@@ -1,0 +1,12 @@
+{
+  "name": "online-learning-platform",
+  "version": "1.0.0",
+  "description": "A simple online learning platform built with React and Node.js.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
