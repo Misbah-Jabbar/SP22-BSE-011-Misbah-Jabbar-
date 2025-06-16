@@ -16,9 +16,8 @@ const courseSchema = new mongoose.Schema({
         min: 0
     },
     category: {
-        type: String,
-        required: true,
-        enum: ['programming', 'design', 'business', 'marketing']
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category'
     },
     level: {
         type: String,
@@ -34,21 +33,14 @@ const courseSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    status: {
+        type: String,
+        enum: ['draft', 'pending', 'active', 'inactive'],
+        default: 'draft'
+    },
     enrolledStudents: [{
-        student: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        progress: {
-            type: Number,
-            default: 0,
-            min: 0,
-            max: 100
-        },
-        lastAccessed: {
-            type: Date,
-            default: Date.now
-        }
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
     content: [{
         title: String,
@@ -126,7 +118,7 @@ courseSchema.methods.calculateRating = function() {
 // Get student progress
 courseSchema.methods.getStudentProgress = function(studentId) {
     const enrollment = this.enrolledStudents.find(
-        enrollment => enrollment.student.toString() === studentId.toString()
+        enrollment => enrollment.toString() === studentId.toString()
     );
     return enrollment ? enrollment.progress : 0;
 };
@@ -134,7 +126,7 @@ courseSchema.methods.getStudentProgress = function(studentId) {
 // Update student progress
 courseSchema.methods.updateStudentProgress = async function(studentId, progress) {
     const enrollment = this.enrolledStudents.find(
-        enrollment => enrollment.student.toString() === studentId.toString()
+        enrollment => enrollment.toString() === studentId.toString()
     );
 
     if (enrollment) {

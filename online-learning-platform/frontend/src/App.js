@@ -1,105 +1,99 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Components
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import Home from './components/Home';
+import Login from './components/Login';
+import Register from './components/Register';
+import Dashboard from './components/Dashboard';
+import AdminDashboard from './components/AdminDashboard';
+import InstructorDashboard from './components/InstructorDashboard';
+import CourseList from './components/CourseList';
+import CourseDetail from './components/CourseDetail';
+import Profile from './components/Profile';
+import NotFound from './components/NotFound';
 
-// Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Courses from './pages/Courses';
-import CourseDetail from './pages/CourseDetail';
-import AdminDashboard from './pages/AdminDashboard';
-import InstructorDashboard from './pages/InstructorDashboard';
-import StudentDashboard from './pages/StudentDashboard';
-import NotFound from './pages/NotFound';
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
-// Create theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (token) {
+      setIsAuthenticated(true);
+      setUserRole(role);
+    }
+  }, []);
 
-// Protected Route Component
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user } = useAuth();
+  const PrivateRoute = ({ children, allowedRoles }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" />;
+    }
 
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
+    if (allowedRoles && !allowedRoles.includes(userRole)) {
+      return <Navigate to="/dashboard" />;
+    }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" />;
-  }
+    return children;
+  };
 
-  return children;
-};
-
-// Role-based Dashboard Component
-const Dashboard = () => {
-  const { user } = useAuth();
-
-  switch (user.role) {
-    case 'admin':
-      return <AdminDashboard />;
-    case 'instructor':
-      return <InstructorDashboard />;
-    case 'student':
-      return <StudentDashboard />;
-    default:
-      return <Navigate to="/" />;
-  }
-};
-
-const AppContent = () => {
   return (
-    <Router>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Navbar />
-        <div style={{ flex: 1 }}>
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses" element={<CourseList />} />
             <Route path="/courses/:id" element={<CourseDetail />} />
-            <Route
-              path="/dashboard"
+            
+            <Route 
+              path="/dashboard" 
               element={
-                <ProtectedRoute allowedRoles={['admin', 'instructor', 'student']}>
+                <PrivateRoute>
                   <Dashboard />
-                </ProtectedRoute>
-              }
+                </PrivateRoute>
+              } 
             />
+            
+            <Route 
+              path="/admin" 
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </PrivateRoute>
+              } 
+            />
+            
+            <Route 
+              path="/instructor" 
+              element={
+                <PrivateRoute allowedRoles={['instructor']}>
+                  <InstructorDashboard />
+                </PrivateRoute>
+              } 
+            />
+            
+            <Route 
+              path="/profile" 
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              } 
+            />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
-        <Footer />
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
-};
-
-const App = () => {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
-  );
-};
+}
 
 export default App; 

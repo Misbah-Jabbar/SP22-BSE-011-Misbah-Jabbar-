@@ -4,17 +4,31 @@ const auth = require('../middleware/auth');
 const Course = require('../models/Course');
 const User = require('../models/User');
 
+// Get enrolled courses
+router.get('/enrolled-courses', auth, async (req, res) => {
+  try {
+    const student = await User.findById(req.user.userId).populate('enrolledCourses');
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.json(student.enrolledCourses);
+  } catch (error) {
+    console.error('Error fetching enrolled courses:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get student statistics
 router.get('/stats', auth, async (req, res) => {
   try {
-    const student = await User.findById(req.user.id);
-    const enrolledCourses = await Course.find({ enrolledStudents: req.user.id });
+    const student = await User.findById(req.user.userId);
+    const enrolledCourses = await Course.find({ enrolledStudents: req.user.userId });
     
     const stats = {
       totalCourses: enrolledCourses.length,
       completedCourses: enrolledCourses.filter(course => course.progress === 100).length,
       inProgressCourses: enrolledCourses.filter(course => course.progress > 0 && course.progress < 100).length,
-      certificates: enrolledCourses.filter(course => course.progress === 100).length // Assuming completed courses get certificates
+      certificates: enrolledCourses.filter(course => course.progress === 100).length
     };
 
     res.json(stats);

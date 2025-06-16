@@ -37,16 +37,11 @@ const Register = () => {
     e.preventDefault();
     setError('');
 
-    const result = await register(
-      formData.name,
-      formData.email,
-      formData.password,
-      formData.role
-    );
+    const result = await register(formData);
     if (result.success) {
       navigate('/courses');
     } else {
-      setError(result.message);
+      setError(result.error || 'Registration failed');
     }
   };
 
@@ -102,6 +97,7 @@ const Register = () => {
               >
                 <MenuItem value="student">Student</MenuItem>
                 <MenuItem value="instructor">Instructor</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
               </Select>
             </FormControl>
             <Button

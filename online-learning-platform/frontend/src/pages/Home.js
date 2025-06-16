@@ -10,9 +10,20 @@ import {
   CardContent
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
+import { Download as DownloadIcon } from '@mui/icons-material';
 
 const Home = () => {
   const { user } = useAuth();
+
+  const handleDownload = () => {
+    // Create a link element
+    const link = document.createElement('a');
+    link.href = 'https://github.com/your-username/online-learning-platform/archive/refs/heads/main.zip';
+    link.download = 'online-learning-platform.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Box>
@@ -35,14 +46,14 @@ const Home = () => {
                 Start, switch, or advance your career with thousands of courses from expert instructors.
               </Typography>
               <Button
-                component={RouterLink}
-                to="/courses"
+                onClick={handleDownload}
                 variant="contained"
                 color="secondary"
                 size="large"
+                startIcon={<DownloadIcon />}
                 sx={{ mt: 2 }}
               >
-                Browse Courses
+                Download Project
               </Button>
             </Grid>
             <Grid item xs={12} md={6}>

@@ -29,7 +29,11 @@ const MyCourses = () => {
 
   const fetchEnrolledCourses = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/enrollments/my-courses');
+      const res = await axios.get('http://localhost:5000/api/student/enrolled-courses', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       setCourses(res.data);
       setLoading(false);
     } catch (err) {

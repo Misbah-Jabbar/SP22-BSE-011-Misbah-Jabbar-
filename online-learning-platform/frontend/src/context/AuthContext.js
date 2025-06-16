@@ -3,35 +3,30 @@ import axios from 'axios';
 
 const AuthContext = createContext(null);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUser(token);
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  const checkAuth = async () => {
+  const fetchUser = async (token) => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const response = await axios.get('http://localhost:5000/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUser(response.data);
-      }
+      const response = await axios.get('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(response.data);
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error('Error fetching user:', error);
       localStorage.removeItem('token');
-      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -48,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true };
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Login error:', error);
       return {
         success: false,
         error: error.response?.data?.message || 'Login failed'
@@ -64,7 +59,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true };
     } catch (error) {
-      console.error('Registration failed:', error);
+      console.error('Registration error:', error);
       return {
         success: false,
         error: error.response?.data?.message || 'Registration failed'
@@ -77,26 +72,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateUser = (updatedUser) => {
-    setUser(updatedUser);
-  };
-
   const value = {
     user,
     loading,
     login,
     register,
-    logout,
-    updateUser
+    logout
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }; 
